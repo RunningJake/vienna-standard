@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Vienna Standard - Economic Research by Location</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1a1a2e; --secondary: #16213e; --accent: #c5a572;
+            --text: #333; --light: #f4f4f4; --white: #ffffff; --border: #ddd;
+        }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: var(--text); background: var(--light); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background: var(--primary); color: var(--white); padding: 2rem 0; text-align: center; border-bottom: 4px solid var(--accent); }
+        .logo { font-family: 'Libre Baskerville', serif; font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: 1px; }
+        .tagline { font-size: 1rem; color: var(--accent); font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
+        .intro { text-align: center; padding: 2rem 0; font-size: 1.1rem; color: #666; }
+        .map-container { position: relative; margin: 2rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        #map { height: 600px; width: 100%; background: #a5bfdd; }
+        .article-panel { position: fixed; right: 0; top: 0; width: 450px; height: 100vh; background: var(--white); box-shadow: -2px 0 20px rgba(0,0,0,0.15); overflow-y: auto; padding: 2rem; transform: translateX(100%); transition: transform 0.3s ease; z-index: 1000; }
+        .article-panel.active { transform: translateX(0); }
+        .article-panel.hidden { display: none; }
+        .close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: #999; line-height: 1; padding: 0; width: 30px; height: 30px; transition: color 0.2s; }
+        .close-btn:hover { color: var(--text); }
+        .article-location { display: inline-block; background: var(--accent); color: var(--white); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 500; }
+        .article-title { font-family: 'Libre Baskerville', serif; font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--primary); line-height: 1.3; }
+        .article-meta { color: #999; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .article-body { font-size: 1rem; line-height: 1.8; }
+        .article-body p { margin-bottom: 1rem; }
+        .article-body h2 { font-family: 'Libre Baskerville', serif; margin-top: 2rem; margin-bottom: 1rem; color: var(--secondary); }
+        .recent-section { margin: 4rem 0; }
+        .recent-section h2 { font-family: 'Libre Baskerville', serif; font-size: 2rem; margin-bottom: 2rem; color: var(--primary); }
+        .article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+        .article-card { background: var(--white); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .article-card:hover { transform: translateY(-4px); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+        .article-card .article-location { font-size: 0.75rem; margin-bottom: 0.75rem; }
+        .article-card h3 { font-family: 'Libre Baskerville', serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--primary); }
+        .article-card .excerpt { color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.75rem; }
+        .article-card .date { color: #999; font-size: 0.85rem; }
+        footer { background: var(--primary); color: var(--white); text-align: center; padding: 2rem 0; margin-top: 4rem; }
+        footer p { font-size: 0.9rem; color: #999; }
+        @media (max-width: 768px) {
+            .logo { font-size: 2rem; }
+            #map { height: 400px; }
+            .article-panel { width: 100%; }
+            .article-grid { grid-template-columns: 1fr; }
+            .article-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="logo">The Vienna Standard</h1>
+            <p class="tagline">Economic Research, Mapped</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="intro">
+                <p>Click any country or city on the map to explore economic research and analysis from that region.</p>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+
+            <div id="article-panel" class="article-panel hidden">
+                <button class="close-btn" onclick="closeArticlePanel()">×</button>
+                <div id="article-content"></div>
+            </div>
+
+            <section id="recent-articles" class="recent-section">
+                <h2>Recent Research</h2>
+                <div id="recent-list" class="article-grid"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 The Vienna Standard. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Articles database
+        const articles = [
+            {
+                id: 1,
+                title: "The Austrian School in Modern Vienna",
+                location: "Vienna, Austria",
+                lat: 48.2082,
+                lng: 16.3738,
+                date: "February 6, 2026",
+                author: "Jake",
+                excerpt: "Exploring the resurgence of Austrian economic thought in contemporary European policy debates.",
+                content: `
+                    <p>Vienna, the birthplace of the Austrian School of economics, continues to serve as a focal point for contemporary economic discourse. As European policymakers grapple with inflation, monetary policy, and fiscal sustainability, the insights of Mises, Hayek, and Böhm-Bawerk remain surprisingly relevant.</p>
+                    <h2>The Return to Sound Money</h2>
+                    <p>Recent debates within the European Central Bank have reignited discussions about monetary neutrality and the distortive effects of prolonged quantitative easing. Austrian critiques of central planning in monetary affairs have found new audiences among economists concerned about asset price inflation and wealth inequality.</p>
+                    <h2>Entrepreneurship and Capital Structure</h2>
+                    <p>Vienna's thriving startup ecosystem provides a modern laboratory for observing Austrian capital theory in action. The city's entrepreneurs navigate time preference, capital allocation, and economic calculation in ways that would be familiar to the early Austrian economists.</p>
+                    <p>As we face new economic challenges, the Austrian emphasis on subjective value, time preference, and spontaneous order offers frameworks for understanding complex market phenomena that resist top-down modeling.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Tech Hubs and Economic Complexity: The Singapore Model",
+                location: "Singapore",
+                lat: 1.3521,
+                lng: 103.8198,
+                date: "February 5, 2026",
+                author: "Jake",
+                excerpt: "How Singapore's strategic positioning and regulatory framework created Southeast Asia's premier innovation hub.",
+                content: `
+                    <p>Singapore's transformation from regional port to global tech hub offers a case study in intentional economic development. The city-state's success demonstrates how institutional quality, strategic investment, and openness can generate sustained economic complexity.</p>
+                    <h2>Regulatory Innovation</h2>
+                    <p>Singapore's approach to fintech regulation—balancing innovation with stability—has attracted major financial institutions and blockchain startups alike. The Monetary Authority of Singapore's regulatory sandbox allows experimentation while maintaining oversight.</p>
+                    <h2>Human Capital Investment</h2>
+                    <p>Massive investment in education and selective immigration policies have created a workforce capable of operating at the technological frontier. The concentration of talent enables knowledge spillovers that drive further innovation.</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Decentralization and Economic Growth in Swiss Cantons",
+                location: "Zurich, Switzerland",
+                lat: 47.3769,
+                lng: 8.5417,
+                date: "February 4, 2026",
+                author: "Jake",
+                excerpt: "Switzerland's federal structure creates natural experiments in tax policy, regulation, and public service delivery.",
+                content: `
+                    <p>Switzerland's canton system provides unique insights into competitive federalism. With significant autonomy over taxation and spending, cantons compete for residents and businesses, creating pressures for efficiency and innovation in governance.</p>
+                    <h2>Tax Competition and Efficiency</h2>
+                    <p>Inter-cantonal tax competition has led to relatively low rates and efficient public services. Citizens can "vote with their feet," constraining governments and revealing preferences through migration patterns.</p>
+                    <h2>Lessons for Federal Systems</h2>
+                    <p>The Swiss model demonstrates how decentralization can enable policy experimentation, accountability, and tailoring of public goods to local preferences—insights relevant to debates about centralization worldwide.</p>
+                `
+            }
+        ];
+
+        // Map setup
+        let map;
+        function initMap() {
+            map = L.map('map').setView([48, 15], 4);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+            
+            const locationGroups = {};
+            articles.forEach(article => {
+                const key = `${article.lat},${article.lng}`;
+                if (!locationGroups[key]) {
+                    locationGroups[key] = { location: article.location, lat: article.lat, lng: article.lng, articles: [] };
+                }
+                locationGroups[key].articles.push(article);
+            });
+
+            Object.values(locationGroups).forEach(group => {
+                const marker = L.marker([group.lat, group.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background:#c5a572;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;">${group.articles.length}</div>`,
+                        iconSize: [30, 30]
+                    })
+                }).addTo(map);
+
+                let popupContent = `<div style="font-weight:600;margin-bottom:0.5rem;">${group.location}</div>`;
+                popupContent += `<div style="color:#666;font-size:0.9rem;margin-bottom:0.5rem;">${group.articles.length} article${group.articles.length > 1 ? 's' : ''}</div>`;
+                popupContent += '<ul style="margin-top:0.5rem;padding-left:1.25rem;">';
+                group.articles.forEach(article => {
+                    popupContent += `<li style="margin-bottom:0.25rem;cursor:pointer;" onclick="showArticle(${article.id})">
+                        <a style="color:#1a1a2e;text-decoration:none;">${article.title}</a>
+                    </li>`;
+                });
+                popupContent += '</ul>';
+                marker.bindPopup(popupContent, { maxWidth: 300 });
+            });
+        }
+
+        function loadRecentArticles() {
+            const recentList = document.getElementById('recent-list');
+            [...articles].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6).forEach(article => {
+                const card = document.createElement('div');
+                card.className = 'article-card';
+                card.onclick = () => showArticle(article.id);
+                card.innerHTML = `
+                    <div class="article-location">${article.location}</div>
+                    <h3>${article.title}</h3>
+                    <p class="excerpt">${article.excerpt}</p>
+                    <div class="date">${article.date}</div>
+                `;
+                recentList.appendChild(card);
+            });
+        }
+
+        function showArticle(articleId) {
+            const article = articles.find(a => a.id === articleId);
+            if (!article) return;
+            
+            const panel = document.getElementById('article-panel');
+            const content = document.getElementById('article-content');
+            content.innerHTML = `
+                <div class="article-header">
+                    <div class="article-location">${article.location}</div>
+                    <h1 class="article-title">${article.title}</h1>
+                    <div class="article-meta">By ${article.author} • ${article.date}</div>
+                </div>
+                <div class="article-body">${article.content}</div>
+            `;
+            
+            panel.classList.remove('hidden');
+            panel.classList.add('active');
+            map.setView([article.lat, article.lng], 8);
+        }
+
+        function closeArticlePanel() {
+            document.getElementById('article-panel').classList.remove('active');
+            map.setView([48, 15], 4);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadRecentArticles();
+        });
+    </script>
+</body>
+</html>
