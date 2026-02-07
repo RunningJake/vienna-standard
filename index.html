@@ -3,85 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Vienna Standard - Economic Research by Location</title>
+    <title>The Vienna Standard - Jake's Economic Research & Portfolio</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #1a1a2e; --secondary: #16213e; --accent: #c5a572;
             --text: #333; --light: #f4f4f4; --white: #ffffff; --border: #ddd;
         }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: var(--text); background: var(--light); }
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--text); background: var(--light); }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        header { background: var(--primary); color: var(--white); padding: 2rem 0; text-align: center; border-bottom: 4px solid var(--accent); }
-        .logo { font-family: 'Libre Baskerville', serif; font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: 1px; }
-        .tagline { font-size: 1rem; color: var(--accent); font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
-        .intro { text-align: center; padding: 2rem 0; font-size: 1.1rem; color: #666; }
-        .map-container { position: relative; margin: 2rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        /* Header & Navigation */
+        header { background: var(--primary); color: var(--white); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-top { border-bottom: 3px solid var(--accent); padding: 1.5rem 0; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Libre Baskerville', serif; font-size: 1.8rem; letter-spacing: 1px; }
+        .tagline { font-size: 0.85rem; color: var(--accent); font-weight: 300; letter-spacing: 1px; text-transform: uppercase; margin-top: 0.25rem; }
+        
+        nav { padding: 0; }
+        .nav-list { list-style: none; display: flex; gap: 0; margin: 0; }
+        .nav-list li { position: relative; }
+        .nav-list a { display: block; padding: 1rem 1.5rem; color: var(--white); text-decoration: none; transition: background 0.2s; border-bottom: 3px solid transparent; font-weight: 500; }
+        .nav-list a:hover, .nav-list a.active { background: rgba(255,255,255,0.1); border-bottom-color: var(--accent); }
+        
+        /* Main Content Areas */
+        .page-section { display: none; padding: 3rem 0; min-height: 70vh; }
+        .page-section.active { display: block; }
+        
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-header h1 { font-family: 'Libre Baskerville', serif; font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem; }
+        .section-header p { color: #666; font-size: 1.1rem; }
+        
+        /* Research Page */
+        .research-controls { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+        .view-toggle { display: flex; gap: 0.5rem; background: var(--white); padding: 0.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .view-toggle button { padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s; }
+        .view-toggle button.active { background: var(--accent); color: var(--white); }
+        
+        .category-filter { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .category-btn { padding: 0.5rem 1rem; border: 2px solid var(--accent); background: var(--white); color: var(--accent); border-radius: 20px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .category-btn:hover, .category-btn.active { background: var(--accent); color: var(--white); }
+        
+        #map-view { display: none; }
+        #map-view.active { display: block; }
+        #list-view { display: none; }
+        #list-view.active { display: block; }
+        
+        .map-container { margin: 2rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #map { height: 600px; width: 100%; background: #a5bfdd; }
-        .article-panel { position: fixed; right: 0; top: 0; width: 450px; height: 100vh; background: var(--white); box-shadow: -2px 0 20px rgba(0,0,0,0.15); overflow-y: auto; padding: 2rem; transform: translateX(100%); transition: transform 0.3s ease; z-index: 1000; }
+        
+        .article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .article-card { background: var(--white); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.2s; }
+        .article-card:hover { transform: translateY(-4px); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+        .article-card .meta { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .article-location, .article-category { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; font-weight: 500; }
+        .article-location { background: var(--accent); color: var(--white); }
+        .article-category { background: #e0e0e0; color: var(--text); }
+        .article-card h3 { font-family: 'Libre Baskerville', serif; font-size: 1.3rem; margin-bottom: 0.75rem; color: var(--primary); }
+        .article-card .excerpt { color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.75rem; }
+        .article-card .date { color: #999; font-size: 0.85rem; }
+        
+        /* Article Panel */
+        .article-panel { position: fixed; right: 0; top: 0; width: 500px; height: 100vh; background: var(--white); box-shadow: -2px 0 20px rgba(0,0,0,0.15); overflow-y: auto; padding: 2rem; transform: translateX(100%); transition: transform 0.3s ease; z-index: 1000; }
         .article-panel.active { transform: translateX(0); }
-        .article-panel.hidden { display: none; }
-        .close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: #999; line-height: 1; padding: 0; width: 30px; height: 30px; transition: color 0.2s; }
+        .close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: #999; width: 30px; height: 30px; transition: color 0.2s; }
         .close-btn:hover { color: var(--text); }
-        .article-location { display: inline-block; background: var(--accent); color: var(--white); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 500; }
-        .article-title { font-family: 'Libre Baskerville', serif; font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--primary); line-height: 1.3; }
+        .article-title { font-family: 'Libre Baskerville', serif; font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary); line-height: 1.3; }
         .article-meta { color: #999; font-size: 0.9rem; margin-bottom: 1.5rem; }
         .article-body { font-size: 1rem; line-height: 1.8; }
         .article-body p { margin-bottom: 1rem; }
-        .article-body h2 { font-family: 'Libre Baskerville', serif; margin-top: 2rem; margin-bottom: 1rem; color: var(--secondary); }
-        .recent-section { margin: 4rem 0; }
-        .recent-section h2 { font-family: 'Libre Baskerville', serif; font-size: 2rem; margin-bottom: 2rem; color: var(--primary); }
-        .article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
-        .article-card { background: var(--white); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .article-card:hover { transform: translateY(-4px); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
-        .article-card .article-location { font-size: 0.75rem; margin-bottom: 0.75rem; }
-        .article-card h3 { font-family: 'Libre Baskerville', serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--primary); }
-        .article-card .excerpt { color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.75rem; }
-        .article-card .date { color: #999; font-size: 0.85rem; }
+        .article-body h2 { font-family: 'Libre Baskerville', serif; margin-top: 2rem; margin-bottom: 1rem; color: var(--secondary); font-size: 1.5rem; }
+        
+        /* CV Section */
+        .cv-section { background: var(--white); padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 2rem; }
+        .cv-section h2 { font-family: 'Libre Baskerville', serif; font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.5rem; }
+        .cv-item { margin-bottom: 1.5rem; }
+        .cv-item h3 { font-size: 1.2rem; color: var(--secondary); margin-bottom: 0.25rem; }
+        .cv-item .cv-meta { color: #666; font-size: 0.95rem; margin-bottom: 0.5rem; font-style: italic; }
+        .cv-item ul { margin-left: 1.5rem; color: #555; }
+        .cv-item li { margin-bottom: 0.25rem; }
+        
+        /* Contact Section */
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 2rem; }
+        .contact-info { background: var(--white); padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .contact-info h3 { font-family: 'Libre Baskerville', serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary); }
+        .contact-item { display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem; }
+        .contact-item strong { min-width: 80px; color: var(--accent); }
+        .contact-form { background: var(--white); padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text); }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: 1rem; }
+        .form-group textarea { resize: vertical; min-height: 150px; }
+        .btn-submit { background: var(--accent); color: var(--white); padding: 0.75rem 2rem; border: none; border-radius: 4px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-submit:hover { background: #b39563; }
+        
+        /* Footer */
         footer { background: var(--primary); color: var(--white); text-align: center; padding: 2rem 0; margin-top: 4rem; }
         footer p { font-size: 0.9rem; color: #999; }
+        
+        /* Responsive */
         @media (max-width: 768px) {
-            .logo { font-size: 2rem; }
-            #map { height: 400px; }
-            .article-panel { width: 100%; }
+            .header-content { flex-direction: column; gap: 1rem; text-align: center; }
+            .nav-list { flex-direction: column; width: 100%; }
+            .nav-list a { padding: 0.75rem 1rem; }
             .article-grid { grid-template-columns: 1fr; }
-            .article-title { font-size: 1.5rem; }
+            .article-panel { width: 100%; }
+            .contact-grid { grid-template-columns: 1fr; }
+            #map { height: 400px; }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1 class="logo">The Vienna Standard</h1>
-            <p class="tagline">Economic Research, Mapped</p>
+        <div class="header-top">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo-area">
+                        <div class="logo">The Vienna Standard</div>
+                        <div class="tagline">Economic Research & Analysis</div>
+                    </div>
+                </div>
+            </div>
         </div>
+        <nav>
+            <div class="container">
+                <ul class="nav-list">
+                    <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+                    <li><a href="#" class="nav-link" data-page="research">Research</a></li>
+                    <li><a href="#" class="nav-link" data-page="cv">CV</a></li>
+                    <li><a href="#" class="nav-link" data-page="contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
     </header>
 
     <main>
-        <div class="container">
-            <div class="intro">
-                <p>Click any country or city on the map to explore economic research and analysis from that region.</p>
+        <!-- HOME PAGE -->
+        <section id="home-page" class="page-section active">
+            <div class="container">
+                <div class="section-header">
+                    <h1>Welcome to The Vienna Standard</h1>
+                    <p>Economic research and analysis by Jake - exploring markets, policy, and economic theory.</p>
+                </div>
+                <div class="article-grid" id="featured-articles"></div>
             </div>
+        </section>
 
-            <div class="map-container">
-                <div id="map"></div>
+        <!-- RESEARCH PAGE -->
+        <section id="research-page" class="page-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1>Research & Writing</h1>
+                    <p>Exploring economic questions through geography, theory, and data</p>
+                </div>
+                
+                <div class="research-controls">
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="list">List View</button>
+                        <button class="view-btn" data-view="map">Map View</button>
+                    </div>
+                    <div class="category-filter">
+                        <button class="category-btn active" data-category="all">All</button>
+                        <button class="category-btn" data-category="Regional">Regional</button>
+                        <button class="category-btn" data-category="Theory">Theory</button>
+                        <button class="category-btn" data-category="Policy">Policy</button>
+                        <button class="category-btn" data-category="Markets">Markets</button>
+                    </div>
+                </div>
+
+                <div id="map-view">
+                    <div class="map-container">
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <div id="list-view" class="active">
+                    <div class="article-grid" id="article-list"></div>
+                </div>
             </div>
+        </section>
 
-            <div id="article-panel" class="article-panel hidden">
-                <button class="close-btn" onclick="closeArticlePanel()">×</button>
-                <div id="article-content"></div>
+        <!-- CV PAGE -->
+        <section id="cv-page" class="page-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1>Curriculum Vitae</h1>
+                    <p>Background, education, and experience</p>
+                </div>
+
+                <div class="cv-section">
+                    <h2>About</h2>
+                    <p>Economic researcher and analyst focused on institutional economics, monetary theory, and market dynamics. Exploring how economic systems function across different contexts and how theory meets practice.</p>
+                </div>
+
+                <div class="cv-section">
+                    <h2>Education</h2>
+                    <div class="cv-item">
+                        <h3>[Your Degree] in [Field]</h3>
+                        <div class="cv-meta">[University Name] • [Year]</div>
+                        <p>[Brief description or honors]</p>
+                    </div>
+                </div>
+
+                <div class="cv-section">
+                    <h2>Research Interests</h2>
+                    <ul>
+                        <li>Austrian School economics and spontaneous order</li>
+                        <li>Comparative institutional analysis</li>
+                        <li>Economic development and complexity</li>
+                        <li>Monetary policy and central banking</li>
+                        <li>Public choice and political economy</li>
+                    </ul>
+                </div>
+
+                <div class="cv-section">
+                    <h2>Skills</h2>
+                    <ul>
+                        <li>Economic analysis and research methodology</li>
+                        <li>Data analysis and visualization</li>
+                        <li>Writing and communication</li>
+                        <li>Policy analysis</li>
+                    </ul>
+                </div>
             </div>
+        </section>
 
-            <section id="recent-articles" class="recent-section">
-                <h2>Recent Research</h2>
-                <div id="recent-list" class="article-grid"></div>
-            </section>
-        </div>
+        <!-- CONTACT PAGE -->
+        <section id="contact-page" class="page-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1>Get in Touch</h1>
+                    <p>Questions, collaborations, or just want to connect</p>
+                </div>
+
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <h3>Contact Information</h3>
+                        <div class="contact-item">
+                            <strong>Email:</strong>
+                            <span>your.email@example.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Twitter:</strong>
+                            <span>@yourhandle</span>
+                        </div>
+                        <div class="contact-item">
+                            <strong>LinkedIn:</strong>
+                            <span>linkedin.com/in/yourprofile</span>
+                        </div>
+                        <div class="contact-item">
+                            <strong>GitHub:</strong>
+                            <span>github.com/runningjake</span>
+                        </div>
+                    </div>
+
+                    <div class="contact-form">
+                        <h3>Send a Message</h3>
+                        <form id="contact-form">
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" required></textarea>
+                            </div>
+                            <button type="submit" class="btn-submit">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <!-- Article Reading Panel -->
+    <div id="article-panel" class="article-panel">
+        <button class="close-btn" onclick="closeArticlePanel()">×</button>
+        <div id="article-content"></div>
+    </div>
 
     <footer>
         <div class="container">
@@ -91,7 +298,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Articles database
+        // Articles database with categories
         const articles = [
             {
                 id: 1,
@@ -99,6 +306,7 @@
                 location: "Vienna, Austria",
                 lat: 48.2082,
                 lng: 16.3738,
+                category: "Regional",
                 date: "February 6, 2026",
                 author: "Jake",
                 excerpt: "Exploring the resurgence of Austrian economic thought in contemporary European policy debates.",
@@ -117,6 +325,7 @@
                 location: "Singapore",
                 lat: 1.3521,
                 lng: 103.8198,
+                category: "Regional",
                 date: "February 5, 2026",
                 author: "Jake",
                 excerpt: "How Singapore's strategic positioning and regulatory framework created Southeast Asia's premier innovation hub.",
@@ -134,6 +343,7 @@
                 location: "Zurich, Switzerland",
                 lat: 47.3769,
                 lng: 8.5417,
+                category: "Regional",
                 date: "February 4, 2026",
                 author: "Jake",
                 excerpt: "Switzerland's federal structure creates natural experiments in tax policy, regulation, and public service delivery.",
@@ -144,8 +354,132 @@
                     <h2>Lessons for Federal Systems</h2>
                     <p>The Swiss model demonstrates how decentralization can enable policy experimentation, accountability, and tailoring of public goods to local preferences—insights relevant to debates about centralization worldwide.</p>
                 `
+            },
+            {
+                id: 4,
+                title: "Time Preference and Capital Structure Theory",
+                category: "Theory",
+                date: "February 3, 2026",
+                author: "Jake",
+                excerpt: "Revisiting Böhm-Bawerk's insights on time preference and their relevance to modern capital markets.",
+                content: `
+                    <p>Eugen von Böhm-Bawerk's theory of capital remains one of the most profound contributions to economic thought, yet its insights are often overlooked in modern macroeconomics. His emphasis on time preference—the universal tendency to value present goods more highly than future goods—provides a framework for understanding interest rates, capital accumulation, and economic growth.</p>
+                    <h2>The Nature of Capital</h2>
+                    <p>Capital goods represent production processes extended through time. The more "roundabout" the production process, the more productive it can be—but it also requires more waiting, more saving, and therefore a lower time preference among economic actors.</p>
+                    <h2>Modern Applications</h2>
+                    <p>Contemporary debates about infrastructure investment, education policy, and sustainable development all implicitly involve questions of time preference and capital structure. Understanding these dynamics helps explain why some societies invest more successfully in their futures than others.</p>
+                `
+            },
+            {
+                id: 5,
+                title: "Central Bank Digital Currencies: Opportunities and Risks",
+                category: "Policy",
+                date: "February 2, 2026",
+                author: "Jake",
+                excerpt: "Analyzing the implications of CBDCs for monetary policy, privacy, and financial stability.",
+                content: `
+                    <p>As central banks worldwide explore digital currencies, fundamental questions emerge about the future of money, privacy, and state power. CBDCs promise efficiency gains but raise concerns about surveillance and financial freedom.</p>
+                    <h2>The Case for CBDCs</h2>
+                    <p>Proponents argue that digital currencies can reduce transaction costs, improve monetary policy transmission, and provide financial inclusion. They also offer central banks new tools for implementing negative interest rates and direct stimulus payments.</p>
+                    <h2>Privacy and Liberty Concerns</h2>
+                    <p>Critics worry that programmable money could enable unprecedented government surveillance and control over economic activity. The potential for authorities to track, freeze, or expropriate digital funds raises fundamental questions about the relationship between money and freedom.</p>
+                `
             }
         ];
+
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = e.target.dataset.page;
+                
+                // Update nav
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Show page
+                document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(page + '-page').classList.add('active');
+                
+                // Initialize map if research page
+                if (page === 'research' && !window.mapInitialized) {
+                    initMap();
+                    window.mapInitialized = true;
+                }
+            });
+        });
+
+        // View toggle (map/list)
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const view = e.target.dataset.view;
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                document.getElementById('map-view').classList.toggle('active', view === 'map');
+                document.getElementById('list-view').classList.toggle('active', view === 'list');
+                
+                if (view === 'map' && !window.mapInitialized) {
+                    initMap();
+                    window.mapInitialized = true;
+                }
+            });
+        });
+
+        // Category filter
+        let currentCategory = 'all';
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                currentCategory = e.target.dataset.category;
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                loadArticles();
+            });
+        });
+
+        // Load articles
+        function loadArticles() {
+            const filtered = currentCategory === 'all' 
+                ? articles 
+                : articles.filter(a => a.category === currentCategory);
+            
+            const listContainer = document.getElementById('article-list');
+            listContainer.innerHTML = '';
+            
+            filtered.forEach(article => {
+                listContainer.appendChild(createArticleCard(article));
+            });
+        }
+
+        function createArticleCard(article) {
+            const card = document.createElement('div');
+            card.className = 'article-card';
+            card.onclick = () => showArticle(article.id);
+            
+            const meta = article.location 
+                ? `<div class="article-location">${article.location}</div>`
+                : '';
+            const category = `<div class="article-category">${article.category}</div>`;
+            
+            card.innerHTML = `
+                <div class="meta">
+                    ${meta}
+                    ${category}
+                </div>
+                <h3>${article.title}</h3>
+                <p class="excerpt">${article.excerpt}</p>
+                <div class="date">${article.date}</div>
+            `;
+            return card;
+        }
+
+        // Load featured articles on home
+        function loadFeatured() {
+            const container = document.getElementById('featured-articles');
+            articles.slice(0, 3).forEach(article => {
+                container.appendChild(createArticleCard(article));
+            });
+        }
 
         // Map setup
         let map;
@@ -157,8 +491,10 @@
                 maxZoom: 19
             }).addTo(map);
             
+            const geoArticles = articles.filter(a => a.lat && a.lng);
             const locationGroups = {};
-            articles.forEach(article => {
+            
+            geoArticles.forEach(article => {
                 const key = `${article.lat},${article.lng}`;
                 if (!locationGroups[key]) {
                     locationGroups[key] = { location: article.location, lat: article.lat, lng: article.lng, articles: [] };
@@ -188,51 +524,49 @@
             });
         }
 
-        function loadRecentArticles() {
-            const recentList = document.getElementById('recent-list');
-            [...articles].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6).forEach(article => {
-                const card = document.createElement('div');
-                card.className = 'article-card';
-                card.onclick = () => showArticle(article.id);
-                card.innerHTML = `
-                    <div class="article-location">${article.location}</div>
-                    <h3>${article.title}</h3>
-                    <p class="excerpt">${article.excerpt}</p>
-                    <div class="date">${article.date}</div>
-                `;
-                recentList.appendChild(card);
-            });
-        }
-
         function showArticle(articleId) {
             const article = articles.find(a => a.id === articleId);
             if (!article) return;
             
             const panel = document.getElementById('article-panel');
             const content = document.getElementById('article-content');
+            
+            const meta = article.location 
+                ? `<div class="article-location">${article.location}</div>`
+                : '';
+            const category = `<div class="article-category">${article.category}</div>`;
+            
             content.innerHTML = `
-                <div class="article-header">
-                    <div class="article-location">${article.location}</div>
-                    <h1 class="article-title">${article.title}</h1>
-                    <div class="article-meta">By ${article.author} • ${article.date}</div>
+                <div style="margin-bottom:1rem;">
+                    ${meta}
+                    ${category}
                 </div>
+                <h1 class="article-title">${article.title}</h1>
+                <div class="article-meta">By ${article.author} • ${article.date}</div>
                 <div class="article-body">${article.content}</div>
             `;
             
-            panel.classList.remove('hidden');
             panel.classList.add('active');
-            map.setView([article.lat, article.lng], 8);
+            
+            if (article.lat && article.lng && map) {
+                map.setView([article.lat, article.lng], 8);
+            }
         }
 
         function closeArticlePanel() {
             document.getElementById('article-panel').classList.remove('active');
-            map.setView([48, 15], 4);
+            if (map) map.setView([48, 15], 4);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            initMap();
-            loadRecentArticles();
+        // Contact form
+        document.getElementById('contact-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Form submitted! (In production, this would send an email or save to a database)');
         });
+
+        // Initialize
+        loadFeatured();
+        loadArticles();
     </script>
 </body>
 </html>
