@@ -1,0 +1,14 @@
+Add a Games tab to your existing navbar.
+
+If your navbar uses <a> links like:
+  Home | Research | Resume/CV | Contact
+
+Add:
+  <a href="./games/">Games</a>
+
+If your existing links are absolute to the repo root (common on GitHub Pages project sites):
+  <a href="/vienna-standard/games/">Games</a>
+
+Rule of thumb:
+- If your HTML file is at https://runningjake.github.io/vienna-standard/
+  then the Games page will be at https://runningjake.github.io/vienna-standard/games/

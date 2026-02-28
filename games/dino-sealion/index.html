@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dino vs Sea Lion</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <a class="back" href="../">← Games</a>
+        <h1>🦖 Dino vs 🦭 Sea Lion</h1>
+        <p class="sub">First to 3 wins. Pick a move. The computer picks randomly.</p>
+      </div>
+      <div class="actions">
+        <button id="btnReset" class="btn ghost" type="button">Reset</button>
+      </div>
+    </header>
+
+    <section class="arena card" aria-live="polite">
+      <div class="fighter">
+        <div class="label">You</div>
+        <div class="avatar" id="youAvatar" aria-hidden="true">🦖</div>
+        <div class="statRow">
+          <div class="pill">Wins: <span id="youWins">0</span></div>
+          <div class="pill">Streak: <span id="youStreak">0</span></div>
+          <div class="pill">Last: <span id="youLast">—</span></div>
+        </div>
+      </div>
+
+      <div class="vs" aria-hidden="true">
+        <div class="burst"></div>
+        <div class="vsText">VS</div>
+      </div>
+
+      <div class="fighter">
+        <div class="label">Computer</div>
+        <div class="avatar" id="cpuAvatar" aria-hidden="true">🦭</div>
+        <div class="statRow">
+          <div class="pill">Wins: <span id="cpuWins">0</span></div>
+          <div class="pill">Streak: <span id="cpuStreak">0</span></div>
+          <div class="pill">Last: <span id="cpuLast">—</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="h2">Choose your move</h2>
+
+      <div class="moves" role="group" aria-label="Move selection">
+        <button class="move" data-move="roar" type="button">
+          <span class="emoji" aria-hidden="true">🦖</span>
+          <span class="name">ROAR</span>
+          <span class="hint">beats CHOMP</span>
+        </button>
+
+        <button class="move" data-move="splash" type="button">
+          <span class="emoji" aria-hidden="true">🌊</span>
+          <span class="name">SPLASH</span>
+          <span class="hint">beats ROAR</span>
+        </button>
+
+        <button class="move" data-move="chomp" type="button">
+          <span class="emoji" aria-hidden="true">🦭</span>
+          <span class="name">CHOMP</span>
+          <span class="hint">beats SPLASH</span>
+        </button>
+      </div>
+
+      <div class="readout" id="readout" role="status">Make your move.</div>
+
+      <div class="mini">
+        <div class="legend">
+          <div class="chip"><span class="k">ROAR</span> > CHOMP</div>
+          <div class="chip"><span class="k">CHOMP</span> > SPLASH</div>
+          <div class="chip"><span class="k">SPLASH</span> > ROAR</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Embed anywhere with an iframe: <code>&lt;iframe src="./games/dino-sealion/"&gt;&lt;/iframe&gt;</code></span>
+    </footer>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

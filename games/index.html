@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Vienna Standard — Games</title>
+  <meta name="description" content="Mini games hosted on The Vienna Standard." />
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --text:#e8ecff;
+      --muted:#aeb7e6;
+      --line:rgba(255,255,255,.12);
+      --shadow: 0 14px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(100,140,255,.30), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(140,255,214,.20), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    a{color:var(--text)}
+    .wrap{max-width:1000px; margin:0 auto; padding:22px}
+    header{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;
+      padding-top:18px;
+    }
+    h1{margin:0; font-size:clamp(26px, 3.5vw, 40px)}
+    p{margin:10px 0; color:var(--muted); line-height:1.55}
+    .nav{display:flex; gap:10px; flex-wrap:wrap}
+    .nav a{
+      text-decoration:none;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
+    .nav a:hover{background:rgba(255,255,255,.08)}
+    .card{
+      margin-top:18px;
+      padding:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:14px;
+      margin-top:12px;
+    }
+    .tile{
+      display:flex; flex-direction:column; gap:8px;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.20);
+    }
+    .tile h2{margin:0; font-size:18px}
+    .tile .meta{font-family:var(--mono); font-size:13px; color:var(--muted)}
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      text-decoration:none;
+      font-weight:650;
+    }
+    .btn:hover{background:rgba(255,255,255,.12)}
+    .btn.ghost{background:transparent}
+    .frame{
+      margin-top:14px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      background:#0a0f1f;
+    }
+    iframe{width:100%; height:720px; border:0; display:block}
+    footer{margin:22px 0 10px; color:var(--muted); font-size:13px; text-align:center}
+    code{font-family:var(--mono); font-size:.95em; padding:2px 6px; border-radius:7px; background:rgba(255,255,255,.08); border:1px solid var(--line)}
+    @media (max-width:800px){
+      .grid{grid-template-columns:1fr}
+      iframe{height:780px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Games</h1>
+        <p>Mini games you can play against the computer. This page intentionally contains <strong>only games</strong> (no resume section).</p>
+      </div>
+      <nav class="nav" aria-label="Site navigation">
+        <!-- Adjust the Home link if your main page lives elsewhere -->
+        <a href="../">Home</a>
+        <a href="./">Games</a>
+      </nav>
+    </header>
+
+    <section class="card">
+      <p class="meta">
+        Add this folder to your repo at <code>/games/</code> and link to it from your navbar (example snippet is in the ZIP).
+      </p>
+
+      <div class="grid">
+        <div class="tile">
+          <h2>🦖 Dino vs 🦭 Sea Lion</h2>
+          <div class="meta">First to 3 wins • ROAR/SPLASH/CHOMP</div>
+          <p>A tiny “rock–paper–scissors” battle with clean emoji art (no weird SVG faces).</p>
+          <div class="btnrow">
+            <a class="btn" href="./dino-sealion/">Open full page</a>
+            <a class="btn ghost" href="#embed">Jump to embed</a>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h2>More games coming</h2>
+          <div class="meta">Drop-in structure</div>
+          <p>Create a new folder under <code>/games/&lt;name&gt;/</code> with an <code>index.html</code>, then add a tile here.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="embed" class="card">
+      <h2 style="margin:0 0 10px; font-size:18px;">Play inline</h2>
+      <div class="frame">
+        <iframe title="Dino vs Sea Lion" src="./dino-sealion/" loading="lazy"></iframe>
+      </div>
+    </section>
+
+    <footer>© 2026 The Vienna Standard</footer>
+  </div>
+</body>
+</html>
